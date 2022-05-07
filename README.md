@@ -1,0 +1,1 @@
+Lonunm GPT-3 teknolojisini kullanan bir reddit botudur.
