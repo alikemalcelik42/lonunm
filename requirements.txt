@@ -1,0 +1,4 @@
+openai
+googletrans
+praw
+python-dotenv
