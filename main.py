@@ -57,5 +57,5 @@ def CommentHotPosts(sbrddt, lmt=10):
             response = Send(text)
             post.reply(response)
 
-CommentHotPosts("Test2750")
+CommentHotPosts("ZargoryanGalaksisi")
 ReplyAll()
