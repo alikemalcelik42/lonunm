@@ -10,6 +10,7 @@ from PIL import Image
 import cv2
 import pytesseract
 import unidecode
+import time
 
 dotenv.load_dotenv()
 
@@ -92,5 +93,5 @@ def CommentHotPosts(sbrddt, lmt=10):
             response = Send(text)
             post.reply(response)
 
-CommentHotPosts("ZargoryanGalaksisi", 10)
 ReplyAll()
+CommentHotPosts("ZargoryanGalaksisi", 10)
