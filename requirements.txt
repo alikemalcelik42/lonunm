@@ -2,3 +2,9 @@ openai
 googletrans
 praw
 python-dotenv
+requests
+numpy
+Pillow
+opencv-python
+pytesseract
+unidecode
