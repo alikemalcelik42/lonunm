@@ -24,12 +24,12 @@ def Send(text):
     text = Translate(text, "tr", "en")
     response = openai.Completion.create(
         engine="text-davinci-002",
-        prompt=f"Human: {text}\n AI:",
-        temperature=1,
+        prompt=f"The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, funny and very friendly.\n\nHuman: {text}\nAI:",
+        temperature=0.9,
         max_tokens=150,
         top_p=1,
-        frequency_penalty=1,
-        presence_penalty=1,
+        frequency_penalty=0.0,
+        presence_penalty=0.6,
         stop=[" Human:", " AI:"]
     )
     
