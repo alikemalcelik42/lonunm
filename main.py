@@ -21,6 +21,7 @@ pytesseract.pytesseract.tesseract_cmd = os.getenv("TESSERACT_CMD")
 translator = googletrans.Translator()
 
 log_file_path = os.getenv("LOG_FILE_PATH")
+definition = os.getenv("DEFINITION")
 subreddit_name = os.getenv("SUBREDDIT_NAME")
 limit = int(os.getenv("LIMIT"))
 countdown = int(os.getenv("COUNTDOWN"))
@@ -69,7 +70,7 @@ def SendAI(request):
     request = Translate(request, "tr", "en")
     response = openai.Completion.create(
         engine="text-davinci-002",
-        prompt=f"The following is a conversation with an AI bot. The bot is helpful, creative, clever, funny and very friendly.\n\nHuman: {request}\nAI:",
+        prompt=f"{definition}\n\nHuman: {request}\nAI:",
         temperature=0.9,
         max_tokens=150,
         top_p=1,
