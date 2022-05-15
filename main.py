@@ -37,6 +37,10 @@ def Log(request, response, author, subreddit):
     with open(log_file_path, "a", encoding="utf-8") as f:
         f.write(f"Request: '{request}'\nResponse: '{response}'\nAuthor: '{author}'\nSubreddit: '{subreddit}'\nDate: {datetime.datetime.now()}\n\n")
 
+def LogError(error, request, author, subreddit):
+    with open(log_file_path, "a", encoding="utf-8") as f:
+        f.write(f"Error: {error}¨\nRequest: '{request}'\nAuthor: '{author}'\nSubreddit: '{subreddit}'\nDate: {datetime.datetime.now()}\n\n")
+
 def Translate(text, _from, to):
     return translator.translate(text, src=_from, dest=to).text
 
@@ -86,8 +90,9 @@ def ReplyAllMessages():
             message.reply(response)
             message.mark_read()
             Log(message.body, response, message.author, message.subreddit.display_name)
-        except:
+        except Exception as e:
             message.mark_read()
+            LogError(e, message.body, message.author, message.subreddit.display_name)
 
 def CommentHotPosts():
     subreddit = reddit.subreddit(subreddit_name)
@@ -110,8 +115,8 @@ def CommentHotPosts():
             try:
                 post.reply(response)
                 Log(request, response, post.author, post.subreddit.display_name)
-            except:
-                pass
+            except Exception as e:
+                LogError(e, request, post.author, post.subreddit.display_name)
 
 while True:
     time.sleep(countdown)
