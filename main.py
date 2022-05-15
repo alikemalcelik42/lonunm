@@ -1,5 +1,6 @@
 import openai
 import googletrans
+from pandas import datetime
 import praw
 import os
 import dotenv
@@ -10,8 +11,8 @@ from PIL import Image
 import cv2
 import pytesseract
 import unidecode
-from prawcore.exceptions import Forbidden
 import time
+import datetime
 
 dotenv.load_dotenv()
 
@@ -26,15 +27,19 @@ countdown = int(os.getenv("COUNTDOWN"))
 reddit = praw.Reddit(
     client_id=os.getenv("CLIENT_ID"),
     client_secret=os.getenv("CLIENT_SECRET"),
-    user_agent="<console:lonunm:1.0>",
+    user_agent=f"<console:lonunm:1.0>",
     username="lonunm",
     password=os.getenv("PASSWORD")
 )
 
+def Log(request, response, author, sbrddt):
+    with open("log.txt", "a", encoding="utf-8") as f:
+        f.write(f"Request: '{request}'\nResponse: '{response}'\nAuthor: '{author}'\nSubreddit: '{sbrddt}'\nDate: {datetime.datetime.now()}\n\n")
+
 def Translate(text, _from, to):
     return translator.translate(text, src=_from, dest=to).text
 
-def UrlToImg(url):
+def ConvertUrlToImg(url):
     img = Image.open(BytesIO(requests.get(url).content))
     return np.array(img)
 
@@ -48,18 +53,18 @@ def ResizeImg(img, max_height, max_width):
         img = cv2.resize(img, None, fx=scaling_factor, fy=scaling_factor, interpolation=cv2.INTER_AREA)
     return img
 
-def ReadTexts(img):
+def ReadTextFromImg(img):
     gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     threshold_img = cv2.threshold(gray_img, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
     text = pytesseract.image_to_string(threshold_img, lang='tur')
-    text = unidecode.unidecode(text)
-    return text.strip()
+    text = unidecode.unidecode(text).strip()
+    return text
 
-def SendAI(text):
-    text = Translate(text, "tr", "en")
+def SendAI(request):
+    request = Translate(request, "tr", "en")
     response = openai.Completion.create(
         engine="text-davinci-002",
-        prompt=f"The following is a conversation with an AI bot. The bot is helpful, creative, clever, funny and very friendly.\n\nHuman: {text}\nAI:",
+        prompt=f"The following is a conversation with an AI bot. The bot is helpful, creative, clever, funny and very friendly.\n\nHuman: {request}\nAI:",
         temperature=0.9,
         max_tokens=150,
         top_p=1,
@@ -71,14 +76,16 @@ def SendAI(text):
     response = response.choices[0].text.strip()
     return Translate(response, "en", "tr")
 
-def ReplyAll():
+def ReplyAllMessages():
     inbox = reddit.inbox.unread()
 
     for message in inbox:
         try:
-            message.reply(SendAI(message.body))
+            response = SendAI(message.body)
+            message.reply(response)
             message.mark_read()
-        except Forbidden:
+            Log(message.body, response, message.author, message.subreddit.display_name)
+        except:
             message.mark_read()
 
 def CommentHotPosts(sbrddt, lmt=10):
@@ -91,21 +98,21 @@ def CommentHotPosts(sbrddt, lmt=10):
                 break
 
         if not replied:
-            text = f"{post.title} {post.selftext}"
+            request = f"{post.title} {post.selftext}"
             if post.url.endswith(".jpg"):
-                img = UrlToImg(post.url)
+                img = ConvertUrlToImg(post.url)
                 img = ResizeImg(img, 400, 400)
-                img_text = ReadTexts(img)
-                text += img_text
-            response = SendAI(text)
+                img_text = ReadTextFromImg(img)
+                request += img_text
+            response = SendAI(request)
             
             try:
                 post.reply(response)
-            except Forbidden:
+                Log(request, response, post.author, sbrddt)
+            except:
                 pass
 
-time.sleep(countdown)
 while True:
-    ReplyAll()
-    CommentHotPosts(subreddit_name, limit)
     time.sleep(countdown)
+    ReplyAllMessages()
+    CommentHotPosts(subreddit_name, limit)

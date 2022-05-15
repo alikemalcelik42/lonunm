@@ -1,0 +1,12 @@
+Request: 'Test '
+Response: '1, 2, 3. Bu şey açık mı?'
+Author: 'xezob2'
+Subreddit: 'Test2750'
+Date: 2022-05-15 13:12:15.705498
+
+Request: 'Teşekkürler'
+Response: 'Rica ederim.'
+Author: 'xezob2'
+Subreddit: 'Test2750'
+Date: 2022-05-15 13:15:16.214796
+
