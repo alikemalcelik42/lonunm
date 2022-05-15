@@ -20,6 +20,7 @@ openai.api_key = os.getenv("API_KEY")
 pytesseract.pytesseract.tesseract_cmd = os.getenv("TESSERACT_CMD")
 translator = googletrans.Translator()
 
+log_file_path = os.getenv("LOG_FILE_PATH")
 subreddit_name = os.getenv("SUBREDDIT_NAME")
 limit = int(os.getenv("LIMIT"))
 countdown = int(os.getenv("COUNTDOWN"))
@@ -32,9 +33,9 @@ reddit = praw.Reddit(
     password=os.getenv("PASSWORD")
 )
 
-def Log(request, response, author, sbrddt):
-    with open("log.txt", "a", encoding="utf-8") as f:
-        f.write(f"Request: '{request}'\nResponse: '{response}'\nAuthor: '{author}'\nSubreddit: '{sbrddt}'\nDate: {datetime.datetime.now()}\n\n")
+def Log(request, response, author, subreddit):
+    with open(log_file_path, "a", encoding="utf-8") as f:
+        f.write(f"Request: '{request}'\nResponse: '{response}'\nAuthor: '{author}'\nSubreddit: '{subreddit}'\nDate: {datetime.datetime.now()}\n\n")
 
 def Translate(text, _from, to):
     return translator.translate(text, src=_from, dest=to).text
@@ -88,9 +89,9 @@ def ReplyAllMessages():
         except:
             message.mark_read()
 
-def CommentHotPosts(sbrddt, lmt=10):
-    subreddit = reddit.subreddit(sbrddt)
-    for post in subreddit.hot(limit=lmt):
+def CommentHotPosts():
+    subreddit = reddit.subreddit(subreddit_name)
+    for post in subreddit.hot(limit=limit):
         replied = False
         for comment in  post.comments:
             if comment.author == "lonunm":
@@ -108,11 +109,11 @@ def CommentHotPosts(sbrddt, lmt=10):
             
             try:
                 post.reply(response)
-                Log(request, response, post.author, sbrddt)
+                Log(request, response, post.author, post.subreddit.display_name)
             except:
                 pass
 
 while True:
     time.sleep(countdown)
     ReplyAllMessages()
-    CommentHotPosts(subreddit_name, limit)
+    CommentHotPosts()
